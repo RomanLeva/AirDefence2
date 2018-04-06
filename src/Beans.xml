@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+   <bean id="generatorandmover" class="airdefence.TargetGeneratorAndMover">
+   </bean>
+   <bean id="antiairmover" class="airdefence.AntiAirMover">
+   </bean>
+   <bean id="radarlistener" class="airdefence.HQRadarListener">
+   </bean>
+   <bean id="radarunit1" class="airdefence.RadarUnit">
+       <constructor-arg name="targetMover">
+           <ref local ="generatorandmover"/>
+       </constructor-arg>
+       <constructor-arg name="antiAirMover">
+           <ref local ="antiairmover"/>
+       </constructor-arg>
+       <constructor-arg name="x" value="350">
+       </constructor-arg>
+       <constructor-arg name="y" value="350">
+       </constructor-arg>
+   </bean>
+   <bean id="radarunit2" class="airdefence.RadarUnit">
+       <constructor-arg name="targetMover">
+           <ref local ="generatorandmover"/>
+       </constructor-arg>
+       <constructor-arg name="antiAirMover">
+           <ref local ="antiairmover"/>
+       </constructor-arg>
+       <constructor-arg name="x" value="450">
+       </constructor-arg>
+       <constructor-arg name="y" value="450">
+       </constructor-arg>
+   </bean>
+   <bean id="headquarters" class="airdefence.HeadQuarters">
+       <constructor-arg name="listener" >
+           <ref local ="radarlistener"/>
+       </constructor-arg>
+   </bean>
+</beans>
