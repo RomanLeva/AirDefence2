@@ -3,27 +3,21 @@ package airdefence;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * @author user
- */
 public class AntiAirMover implements AircraftLogic{
-    public AntiAirMover() {
-        
-    }
     void moveRocketToEnemy(Target antiAir, Target enemy, boolean firstLaunch) throws TargetDestroyedException,
             AntiAirMissedException{
         int enemyX = enemy.getX();
         int enemyY = enemy.getY();
         if (Math.sqrt((antiAir.getX()-enemyX)*(antiAir.getX()-enemyX)
                 +(antiAir.getY()-enemyY)*(antiAir.getY()-enemyY)) <= antiAir.getSpeed()/2) {
-            throw new TargetDestroyedException();
+            throw new TargetDestroyedException(); //типа сигнал подрыва ракеты коли близко к цели
         }
         List<Target> antiAirStepList;
         List<Target> enemyStepList = getAirCraftPossiblePositions(enemy);
         enemyStepList.add(enemy);
         Target antiAirClosestStep;
         Target enemyClosestStep = getAirCraftClosestPosition(enemyStepList, antiAir);
+
         boolean a = enemyClosestStep.getX()>=antiAir.getX(); //true - цель в правой части от ракеты, false - в левой
         boolean b = enemyClosestStep.getY()>=antiAir.getY(); //true - цель в нижней части от ракеты, false - в верхней
         boolean c = (enemyClosestStep.getX()-antiAir.getX())*(enemyClosestStep.getX()-antiAir.getX())
@@ -189,9 +183,9 @@ public class AntiAirMover implements AircraftLogic{
     }
     private List<Target> getAirCraftPossiblePositions(Target enemy){
         List<Target> positionsList = new ArrayList<>();
-        Target enemyStepForward = new Target(enemy.getType(), null, enemy.getCode(), enemy.getSpeed(), enemy.getX(), enemy.getY());
-        Target enemyStepLeft = new Target(enemy.getType(), null, enemy.getCode(), enemy.getSpeed(), enemy.getX(), enemy.getY());
-        Target enemyStepRight = new Target(enemy.getType(), null, enemy.getCode(), enemy.getSpeed(), enemy.getX(), enemy.getY());
+        Target enemyStepForward = new Target(enemy.getType(), Target.Direction.NONE, enemy.getCode(), enemy.getSpeed(), enemy.getX(), enemy.getY());
+        Target enemyStepLeft = new Target(enemy.getType(), Target.Direction.NONE, enemy.getCode(), enemy.getSpeed(), enemy.getX(), enemy.getY());
+        Target enemyStepRight = new Target(enemy.getType(), Target.Direction.NONE, enemy.getCode(), enemy.getSpeed(), enemy.getX(), enemy.getY());
         switch(enemy.getDir().toString()){
             case "N": 
                 enemyStepForward.setDir(Target.Direction.N);

@@ -10,23 +10,14 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.util.Iterator;
-import java.util.Queue;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- *
- * @author user
- */
 public class HQRadarListener implements Listener{
     private static final Logger logger = Logger.getLogger(HQRadarListener.class.getName());
-    private boolean ready = false;
-    private HeadQuarters hq;
     private Selector selector;
     private ServerSocketChannel ssc;
-    private Queue<SocketChannel> channels;
-    private ByteBuffer buf;
     static {
         logger.addHandler(AirDefence.fileHandler);
     }
@@ -37,15 +28,15 @@ public class HQRadarListener implements Listener{
             ssc = ServerSocketChannel.open().bind(new InetSocketAddress(5000));
             ssc.configureBlocking(false);
             ssc.register(selector, SelectionKey.OP_ACCEPT);
-            buf = ByteBuffer.allocate(5000);
+
         } catch (IOException ex) {
             logger.log(Level.FINE, ex.getMessage());
         }
     }
     @Override
     public void beginListening(HeadQuarters hq) {
+        ByteBuffer buf = ByteBuffer.allocate(5000);
         new Thread(() -> {
-            ready = true;
             Set<SelectionKey> keySet;
             Iterator<SelectionKey> iterator;
             CharsetDecoder decoder = Charset.forName("ISO-8859-1").newDecoder();
@@ -89,9 +80,5 @@ public class HQRadarListener implements Listener{
                 }
             }
         }).start();
-    }
-    @Override
-    public boolean isReady(){
-        return ready;
     }
 }

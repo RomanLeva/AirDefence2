@@ -1,20 +1,15 @@
 package airdefence;
-
-/**
- *
- * @author user
- */
 //Class for both radar and headqarters applications
 public class Target {
-    enum Type {FIGHTER, TRANSPORT, MISSILE, WARHEAD, ANTIAIR}
-    enum Direction{N,S,E,W,NE,NW,SE,SW}
+    enum Type {FIGHTER, TRANSPORT, MISSILE, WARHEAD, ANTIAIR, NONE}
+    enum Direction{N,S,E,W,NE,NW,SE,SW,NONE}
     
     private Type type;
     private Direction dir;
     private int speed, x, y;
     private String code;
     
-    public Target(Type type, Direction dir, String code, int speed, int x, int y) {
+    Target(Type type, Direction dir, String code, int speed, int x, int y) {
         this.type=type;
         this.dir=dir;
         this.code=code;
@@ -23,54 +18,50 @@ public class Target {
         this.y = y;
     }
 
-    public void setType(Type type) {
-        this.type = type;
-    }
-
-    public void setDir(Direction dir) {
+    void setDir(Direction dir) {
         this.dir = dir;
     }
 
-    public void setSpeed(int speed) {
+    void setSpeed(int speed) {
         if (speed > 30) {
             this.speed = 30;
         }
         this.speed = speed;
     }
 
-    public void setCode(String code) {
+    void setCode(String code) {
         this.code = code;
     }
 
-    public void setX(int x) {
+    void setX(int x) {
             this.x = x;
     }
 
-    public void setY(int y) {
+    void setY(int y) {
             this.y = y;
     }
 
-    public Type getType() {
+    Type getType() {
         return type;
     }
 
-    public Direction getDir() {
+    Direction getDir() {
         return dir;
     }
 
-    public int getSpeed() {
+    int getSpeed() {
         return speed;
     }
 
-    public int getX() {
+    int getX() {
         return x;
     }
 
-    public int getY() {
+    int getY() {
         return y;
     }
 
-    public String getCode() {
+    String getCode() {
         return code;
     }
     

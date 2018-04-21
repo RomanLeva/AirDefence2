@@ -21,63 +21,50 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
-/**
- *
- * @author user
- */
+
 public class RadarUnit implements Observer{
     private static final Logger logger = Logger.getLogger(HeadQuarters.class.getName());
     private TargetGeneratorAndMover generatorAndMover;
     private AntiAirMover antiAirMover;
-    private final StringBuilder sbO, sbF;
-    private final ScheduledExecutorService observerExecutor, followingExecutor;
     private volatile Map<Target, Target> target_antiair_Map;
     private SocketChannel sc;
     private int xr, yr;
-    private String radarPosition;
-    private final CharsetDecoder decoder = Charset.forName("ISO-8859-1").newDecoder();
-    private ByteBuffer commandBuf, dataBuf;
-    private Lock sendingLock;
-    private Target wraith;
+    private Lock sendingLock = new ReentrantLock();
     private Clip clipRocket, clipExpl;
+    private Target wraith;
     static {
         logger.addHandler(AirDefence.fileHandler);
     }
     
     public RadarUnit(AircraftLogic targetMover, AircraftLogic antiAirMover, int x, int y){
-        sendingLock = new ReentrantLock();
-        wraith = new Target(null, null, "", 0, 0, 0);
         generatorAndMover = (TargetGeneratorAndMover) targetMover;
         this.antiAirMover = (AntiAirMover) antiAirMover;
         target_antiair_Map = new ConcurrentHashMap<>();
-        commandBuf = ByteBuffer.allocate(10000);
-        dataBuf = ByteBuffer.allocate(10000);
-        sbO = new StringBuilder();
-        sbF = new StringBuilder();
-        observerExecutor = Executors.newSingleThreadScheduledExecutor();
-        followingExecutor = Executors.newSingleThreadScheduledExecutor();
-        xr = x;//new Random().nextInt(800);
-        yr = y;//new Random().nextInt(800);
-        radarPosition = xr +"/"+yr;
+        xr = x;
+        yr = y;
+        wraith = new Target(Target.Type.NONE, Target.Direction.NONE, "", 0, 0, 0);
         try {
             sc = SocketChannel.open();
             sc.connect(new InetSocketAddress("127.0.0.1", 5000)); //localhost connection
             sc.configureBlocking(false);
-        } catch (IOException ex) {
-            logger.log(Level.FINE, ex.getMessage());
-        }
-        try {
             clipRocket = AudioSystem.getClip();
             clipRocket.open(AudioSystem.getAudioInputStream(this.getClass().getClassLoader().getResource("sound/rocket.wav")));
             clipExpl = AudioSystem.getClip();
             clipExpl.open(AudioSystem.getAudioInputStream(this.getClass().getClassLoader().getResource("sound/explosion.wav")));
-        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException ex) {
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException | NullPointerException ex) {
             logger.log(Level.FINE, ex.getMessage());
         }
     }
     @Override
     public void beginRadarSimulation(){
-        generatorAndMover.addObserver(this);
+        CharsetDecoder decoder = Charset.forName("ISO-8859-1").newDecoder();
+        ByteBuffer commandBuf = ByteBuffer.allocate(10000);
+        StringBuilder sbO = new StringBuilder();
+        StringBuilder sbF = new StringBuilder();
+        ScheduledExecutorService observerExecutor = Executors.newSingleThreadScheduledExecutor();
+        ScheduledExecutorService followingExecutor = Executors.newSingleThreadScheduledExecutor();
+        String radarPosition = xr +"/"+yr;
+
         generatorAndMover.beginGeneratingAndMoving();
         observerExecutor.scheduleAtFixedRate(() -> {
             if (!generatorAndMover.targetsList.isEmpty()) {
@@ -87,7 +74,7 @@ public class RadarUnit implements Observer{
                 if (Math.sqrt((xr-t.getX())*(xr-t.getX())+(yr-t.getY())*(yr-t.getY())) <= 200 && target_antiair_Map.size() < 3 & canFire(t)
                         & !target_antiair_Map.containsKey(t)) {
                     t.setCode("ACQ:"+target_antiair_Map.size()+1);
-                    target_antiair_Map.put(t, new Target(Target.Type.ANTIAIR, null, "AAM", 26, xr, yr));
+                    target_antiair_Map.put(t, new Target(Target.Type.ANTIAIR, Target.Direction.NONE, "AAM", 26, xr, yr));
                 } else { 
                     sbO.append(t.toString()).append("/").append(LocalTime.now()).append("\n");
                 }
@@ -105,7 +92,7 @@ public class RadarUnit implements Observer{
                     try {
                         int xt = t.getX(), yt = t.getY();
                         if (Math.sqrt((xr-xt)*(xr-xt)+(yr-yt)*(yr-yt)) <= 200) {
-                            if(a.getDir() != null){
+                            if(a.getDir() != Target.Direction.NONE){
                                 antiAirMover.moveRocketToEnemy(a, t, false);
                                 sbF.append(t.toString()).append("/").append(LocalTime.now()).append("\n");
                                 sbF.append(a.toString()).append("/").append(LocalTime.now()).append("\n");
@@ -175,7 +162,7 @@ public class RadarUnit implements Observer{
     private void sendData(StringBuilder sb){
         sendingLock.lock();
         try {
-            dataBuf = ByteBuffer.wrap(sb.toString().getBytes());
+            ByteBuffer dataBuf = ByteBuffer.wrap(sb.toString().getBytes());
             sc.write(dataBuf);
             dataBuf.clear();
             sb.setLength(0);

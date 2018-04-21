@@ -11,10 +11,6 @@ import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
-/**
- *
- * @author user
- */
 public class HeadQuartersController implements Initializable {
     @FXML
     private Canvas myCanvas;
@@ -44,10 +40,10 @@ public class HeadQuartersController implements Initializable {
                 imageName = tokenizer2.nextToken();
                 code = tokenizer2.nextToken().substring(0, 3);
                 dir = tokenizer2.nextToken();
-                speed = Integer.parseInt(tokenizer2.nextToken());
+                tokenizer2.nextToken();
                 xt = Integer.parseInt(tokenizer2.nextToken());
                 yt = Integer.parseInt(tokenizer2.nextToken());
-                time = tokenizer2.nextToken();
+                tokenizer2.nextToken();
                 img = new Image("img/"+imageName+"_"+dir+".jpg");
                 imH = (int)img.getHeight();
                 imW = (int)img.getWidth();
@@ -74,7 +70,7 @@ public class HeadQuartersController implements Initializable {
         }
     }
     void delete(String data) {
-        int xt = 0, yt = 0;
+        int xt, yt;
         StringTokenizer tokenizer1 = new StringTokenizer(data, "\n");
         tokenizer1.nextToken();
         while (tokenizer1.hasMoreTokens()) {            
